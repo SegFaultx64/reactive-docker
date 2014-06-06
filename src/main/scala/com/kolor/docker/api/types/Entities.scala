@@ -72,7 +72,7 @@ case class ContainerHostConfiguration(
     containerIdFile: Option[String] = None, 
     lxcConf: Option[Map[String,String]] = None, 
     portBindings: Option[Map[String, DockerPortBinding]] = None, 
-    links: Option[Seq[ContainerId]] = None
+    links: Option[Seq[String]] = None
 ) extends DockerEntity
 
 case class ContainerInfo(

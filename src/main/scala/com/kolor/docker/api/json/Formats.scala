@@ -84,7 +84,7 @@ object Formats {
   }
 
   val bindMountHostConfigWrite: Writes[Seq[DockerVolume]] = new Writes[Seq[DockerVolume]] {
-    def writes(seq: Seq[DockerVolume]): JsValue = Json.arr(seq.map(_.toString))
+    def writes(seq: Seq[DockerVolume]): JsValue = Json.toJson(seq.map(_.toString))
   }
 
   val hostConfigPortBindingWrite: Writes[Map[String, DockerPortBinding]] = new Writes[Map[String, DockerPortBinding]] {
@@ -258,7 +258,7 @@ object Formats {
           case (regex(localPort, pType), cfg) => Map(s"$localPort/$pType" -> DockerPortBinding(localPort.toInt, (cfg \ ("HostIp")).asOpt[Int], Some(pType), (cfg \ ("HostPort")).asOpt[String]))
         })
       } and
-      (__ \ "Links").readNullable[Seq[ContainerId]])(ContainerHostConfiguration.apply _),
+      (__ \ "Links").readNullable[Seq[String]])(ContainerHostConfiguration.apply _),
     (
       (__ \ "Privileged").write[Boolean] and
       (__ \ "PublishAllPorts").write[Boolean] and
@@ -266,7 +266,7 @@ object Formats {
       (__ \ "ContainerIdFile").writeNullable[String] and
       (__ \ "LxcConf").writeNullable[Map[String, String]] and
       (__ \ "PortBindings").writeNullable[Map[String, DockerPortBinding]](hostConfigPortBindingWrite) and
-      (__ \ "Links").writeNullable[Seq[ContainerId]])(unlift(ContainerHostConfiguration.unapply)))
+      (__ \ "Links").writeNullable[Seq[String]])(unlift(ContainerHostConfiguration.unapply)))
 
   implicit val containerConfigFmt = Format(
     (
@@ -371,8 +371,8 @@ object Formats {
       ((__ \ "Command").read[String] or (__ \ "Command").read[Boolean].map(_.toString)) and
       (__ \ "Created").read[Long].map(new org.joda.time.DateTime(_)) and
       (__ \ "Status").read[String] and
-      (__ \ "Ports").read[JsArray].map { arr =>
-        Seq.empty[String]
+      (__ \ "Ports").read[JsValue].map {
+        case _ => Seq.empty[String]
       } and
       (__ \ "SizeRw").readNullable[Long] and
       (__ \ "SizeRootFs").readNullable[Long])(Container.apply _),

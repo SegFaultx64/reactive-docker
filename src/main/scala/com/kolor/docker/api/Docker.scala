@@ -37,7 +37,9 @@ sealed trait DockerClient extends DockerApi {
     Http(req).either.map{
       case Right(resp) if (Seq(200, 201, 202).contains(resp.getStatusCode())) => 
         Json.parse(resp.getResponseBody()).validate[T].fold(
-    		  errors => Left(new DockerResponseParseError(s"Json parse errors: ${errors.mkString("|")}", docker, resp.getResponseBody())),
+    		  errors => {
+            Left(new DockerResponseParseError(s"Json parse errors: ${errors.mkString("|")}", docker, resp.getResponseBody()))
+          },
     		  data => Right(data) 
         )
       case Right(resp) if (resp.getStatusCode() == 409) => 
@@ -47,7 +49,9 @@ sealed trait DockerClient extends DockerApi {
       //}
       case Right(resp) if (resp.getStatusCode() == 500) => throw new DockerInternalServerErrorException(docker, s"docker internal server error for ${req.url}: ${resp.getResponseBody()}")
       case Right(resp) => throw new DockerRequestException(s"docker request error for ${req.url} (Code: ${resp.getStatusCode()}) : ${resp.getResponseBody()}", docker, None, Some(req)) 
-      case Left(t) => Left(t)
+      case Left(t) => {
+        Left(t)
+      }
     }.recover {
       case t: Throwable => 
         log.debug(s"(${req.toRequest.getMethod()}) dockerJsonRequest for ${req.url} failed", t)
