@@ -89,34 +89,31 @@ object Formats {
 
   val hostConfigPortBindingWrite: Writes[Map[String, DockerPortBinding]] = new Writes[Map[String, DockerPortBinding]] {
     def writes(ports: Map[String, DockerPortBinding]): JsValue = {
-      val ret = Json.obj()
-      ports.map {
-        case (_, cfg) => Map(s"${cfg.privatePort}/${cfg.protocol.getOrElse("tcp")}" -> Json.arr(Json.obj("HostPort" -> cfg.publicPort, "HostIp" -> cfg.hostIp)))
-      }
+      val ret = ports.map({
+        case (_, cfg) => Map(s"${cfg.privatePort}/${cfg.protocol.getOrElse("tcp")}" -> Json.arr(Json.obj("HostPort" -> cfg.publicPort.map({_.toString}), "HostIp" -> cfg.hostIp)))
+      }).foldLeft(Map[String, JsValue]())({ _ ++ _ })
 
-      ret
+      Json.toJson(ret)
     }
   }
 
   val networkConfigPortBindingWrite: Writes[Seq[DockerPortBinding]] = new Writes[Seq[DockerPortBinding]] {
     def writes(ports: Seq[DockerPortBinding]): JsValue = {
-      val ret = Json.obj()
-      ports.map {
-        case cfg => Map(s"${cfg.privatePort}/${cfg.protocol.getOrElse("tcp")}" -> Json.obj("HostPort" -> cfg.publicPort, "HostIp" -> cfg.hostIp))
+      val ret = ports.map {
+        case cfg => Map(s"${cfg.privatePort}/${cfg.protocol.getOrElse("tcp")}" -> Json.obj("HostPort" -> cfg.publicPort.map({_.toString}), "HostIp" -> cfg.hostIp))
       }
 
-      ret
+      Json.toJson(ret)
     }
   }
 
   val containerConfigPortBindingWrite: Writes[Map[String, DockerPortBinding]] = new Writes[Map[String, DockerPortBinding]] {
     def writes(ports: Map[String, DockerPortBinding]): JsValue = {
-      val ret = Json.obj()
-      ports.map {
-        case (_, cfg) => Map(s"${cfg.privatePort}/${cfg.protocol.getOrElse("tcp")}" -> Json.obj("HostPort" -> cfg.publicPort, "HostIp" -> cfg.hostIp))
+      val ret = ports.map {
+        case (_, cfg) => Map(s"${cfg.privatePort}/${cfg.protocol.getOrElse("tcp")}" -> Json.obj("HostPort" -> cfg.publicPort.map({_.toString}), "HostIp" -> cfg.hostIp))
       }
 
-      ret
+      Json.toJson(ret)
     }
   }
 

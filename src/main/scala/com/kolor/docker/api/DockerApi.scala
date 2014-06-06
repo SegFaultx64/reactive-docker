@@ -195,7 +195,7 @@ trait DockerContainerApi extends DockerApiHelper {
    */
   def containerCreate(image: String, config: ContainerConfiguration, name: Option[String] = None)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[(ContainerId, Seq[String])] = {
     val cfg = config.copy(image = Some(image))
-    // println(Json.prettyPrint(Json.toJson(cfg)))
+    println(Json.prettyPrint(Json.toJson(cfg)))
     val req = url(Endpoints.containerCreate(name).toString).POST << Json.prettyPrint(Json.toJson(cfg)) <:< Map("Content-Type" -> "application/json")
     docker.dockerRequest(req).map { 
       case Right(resp) if resp.getStatusCode() == 404 => 
@@ -301,7 +301,7 @@ trait DockerContainerApi extends DockerApiHelper {
    * start a container
    */
   def containerStart(id: ContainerId, config: Option[ContainerHostConfiguration] = None)(implicit docker: DockerClient, fmt: Format[ContainerHostConfiguration]): Future[Boolean] = {
-    // config.map(a => { println(Json.prettyPrint(Json.toJson(a))) })
+    config.map(a => { println(Json.prettyPrint(Json.toJson(a))) })
     val req = config match {
       	case Some(cfg) => url(Endpoints.containerStart(id).toString).POST << Json.prettyPrint(Json.toJson(cfg)) <:< Map("Content-Type" -> "application/json")
       	case _ => url(Endpoints.containerStart(id).toString).POST << Json.prettyPrint(Json.toJson(ContainerHostConfiguration())) <:< Map("Content-Type" -> "application/json")
