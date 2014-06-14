@@ -150,8 +150,8 @@ val req = solr / "update" / "json" << a <<? params <:< headers
    */
   def dockerBuildIteratee[T](tarFile: java.io.File, tag: String, verbose: Boolean = false, nocache: Boolean = false)(consumer: Iteratee[Array[Byte], T])(implicit docker: DockerClient, auth: DockerAuth = DockerAnonymousAuth): Future[Iteratee[Array[Byte], T]] = {
     val req = auth match {
-    	case DockerAnonymousAuth => url(Endpoints.dockerBuild(tag, verbose, nocache).toString).POST
-    	case data => url(Endpoints.dockerBuild(tag, verbose, nocache).toString).POST <:< Map("X-Registry-Config" -> data.asBase64Encoded)
+    	case DockerAnonymousAuth => url(Endpoints.dockerBuild(tag, verbose, nocache).toString).POST <<< tarFile
+    	case data => url(Endpoints.dockerBuild(tag, verbose, nocache).toString).POST <<< tarFile <:< Map("X-Registry-Config" -> data.asBase64Encoded)
     }
     
     recoverDockerAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer))
